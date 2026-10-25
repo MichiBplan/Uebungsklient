@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c6470">
+<title>Mundart-Test</title>
+<style>
+:root {
+  --bg: #edf1f0; --surface: #fff; --sunk: #e3e9e8; --ink: #17282a; --muted: #566a6b; --line: #d2dcda;
+  --accent: #1c6470; --accent-ink: #fff; --accent-soft: #d9eaeb; --rec: #b0443a; --good: #2b7a4b; --warm: #a8691f;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111a1b; --surface: #182324; --sunk: #0d1415; --ink: #e2ebe9; --muted: #95a8a7; --line: #2a3a3b;
+    --accent: #6cb2bc; --accent-ink: #0c1a1c; --accent-soft: #1d3638; --rec: #e3857a; --good: #6cc28e; --warm: #d9a457; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+main { max-width: 680px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-size: 1.6rem; margin: 0; }
+h2 { font-size: 1.05rem; margin: 0; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; }
+.label { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px 16px; font-weight: 700; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+input[type="text"], input[type="password"] { width: 100%; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; }
+.engine { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.engine:first-of-type { border-top: 0; padding-top: 0; }
+.engine label.tog { display: flex; gap: 10px; align-items: center; font-weight: 700; }
+.engine .cfg { display: grid; gap: 6px; }
+.mic { width: 108px; height: 108px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 1rem; display: grid; place-items: center; justify-self: center; touch-action: manipulation; }
+.mic.rec { background: var(--rec); animation: pulse 1.3s infinite; }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .mic.rec { animation: none; } }
+.center { display: grid; gap: 8px; justify-items: center; text-align: center; }
+.timer { font-variant-numeric: tabular-nums; font-weight: 700; }
+.sentences { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.result { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 8px; background: var(--bg); }
+.result .head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.result .txt { white-space: pre-wrap; overflow-wrap: anywhere; }
+.result .err { color: var(--rec); }
+.rate { display: flex; gap: 6px; flex-wrap: wrap; }
+.rate button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+.rate button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+details summary { cursor: pointer; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Mundart-Test</h1>
+    <p class="muted">Sprich Schweizerdeutsch wie in einem Beratungsgespräch und vergleiche, welche Spracherkennung dich am besten versteht.</p>
+  </header>
+
+  <section class="card">
+    <h2>1. Erkennung wählen</h2>
+    <div class="engine">
+      <label class="tog"><input type="checkbox" id="e-device"> Gerät (gratis, ohne Schlüssel)</label>
+      <p class="small muted" id="deviceInfo">Nutzt die Spracherkennung deines Handys bzw. Browsers mit der Sprache Deutsch (Schweiz).</p>
+    </div>
+    <div class="engine">
+      <label class="tog"><input type="checkbox" id="e-gemini"> Google Gemini</label>
+      <div class="cfg" id="cfg-gemini">
+        <input type="password" id="k-gemini" placeholder="Gemini-API-Schlüssel (aistudio.google.com)" autocomplete="off">
+        <input type="text" id="m-gemini" value="gemini-2.5-flash" aria-label="Gemini-Modell">
+        <p class="small muted">Liefert Mundart und Hochdeutsch. Mit einem kostenlosen Schlüssel aus Google AI Studio testbar.</p>
+      </div>
+    </div>
+    <div class="engine">
+      <label class="tog"><input type="checkbox" id="e-openai"> OpenAI</label>
+      <div class="cfg" id="cfg-openai">
+        <input type="password" id="k-openai" placeholder="OpenAI-API-Schlüssel (platform.openai.com)" autocomplete="off">
+        <input type="text" id="m-openai" value="gpt-4o-transcribe" aria-label="OpenAI-Modell">
+        <p class="small muted">Kostet ca. 0.006 Fr. pro Minute Aufnahme.</p>
+      </div>
+    </div>
+    <p class="small muted">Schlüssel bleiben nur auf diesem Gerät gespeichert und werden direkt an den jeweiligen Anbieter geschickt.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Sprechen</h2>
+    <details>
+      <summary>Beispielsätze zum Vorlesen</summary>
+      <ol class="sentences small" style="margin-top:8px">
+        <li>Grüezi, nämed Sie doch Platz. Was füehrt Sie hüt zu mir?</li>
+        <li>Wänn ich Sie richtig verstande ha, isch Ihne das alles chli zviel worde i de letschte Wuche.</li>
+        <li>Wie merked Sie das im Alltag, dass es Ihne nöd guet gaht?</li>
+        <li>Uf ere Skala vo null bis zäh, wo stönd Sie grad?</li>
+        <li>Was müesst passiere, dass Sie nach üsem Gspröch säged: Das hät sich gloont?</li>
+        <li>I ha ds Gfüeu, dass Sie das ziemlech beschäftiget. Verzeuet Sie mir no chli meh drüber.</li>
+        <li>Was hät Ihne früecher in schwierige Ziite gholfe?</li>
+      </ol>
+    </details>
+    <div class="center">
+      <button class="mic" id="micBtn" aria-label="Aufnahme starten">Sprechen</button>
+      <span class="timer" id="timer">Tippen zum Starten, nochmals tippen zum Beenden</span>
+      <p class="small err" id="micErr" style="color:var(--rec)" hidden></p>
+    </div>
+  </section>
+
+  <section class="card" id="resCard" hidden>
+    <h2>3. Ergebnis</h2>
+    <p class="small muted">Bewerte jede Erkennung: Hat sie verstanden, was du gemeint hast?</p>
+    <div id="results" style="display:grid;gap:10px"></div>
+  </section>
+
+  <section class="card" id="sumCard" hidden>
+    <h2>Bisherige Bewertungen</h2>
+    <table><thead><tr><th>Erkennung</th><th class="n">passt</th><th class="n">ungefähr</th><th class="n">falsch</th></tr></thead><tbody id="sum"></tbody></table>
+    <div class="row"><button class="btn" id="resetBtn">Bewertungen zurücksetzen</button></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const st = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+  const NAMES = { device: "Gerät", gemini: "Google Gemini", openai: "OpenAI" };
+
+  // Einstellungen merken
+  const cfg = st.get("mt.cfg", { device: true, gemini: false, openai: false });
+  for (const e of ["device", "gemini", "openai"]) {
+    $("e-" + e).checked = !!cfg[e];
+    $("e-" + e).onchange = ev => { cfg[e] = ev.target.checked; st.set("mt.cfg", cfg); showCfg(); };
+  }
+  for (const id of ["k-gemini", "m-gemini", "k-openai", "m-openai"]) {
+    const v = st.get("mt." + id, null); if (v) $(id).value = v;
+    $(id).oninput = ev => st.set("mt." + id, ev.target.value.trim());
+  }
+  function showCfg() { $("cfg-gemini").hidden = !cfg.gemini; $("cfg-openai").hidden = !cfg.openai; }
+  showCfg();
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { $("e-device").checked = false; $("e-device").disabled = true; cfg.device = false; $("deviceInfo").textContent = "Dieser Browser bietet keine eingebaute Spracherkennung. Auf dem iPhone geht es in Safari, auf Android und am Computer in Chrome."; }
+
+  // ---------- Aufnahme ----------
+  let rec = null, t0 = 0, tInt = null;
+  $("micBtn").onclick = () => rec ? stop() : start();
+
+  async function start() {
+    $("micErr").hidden = true;
+    const useDevice = cfg.device && SR, useCloud = cfg.gemini || cfg.openai;
+    if (!useDevice && !useCloud) { err("Wähle oben mindestens eine Erkennung."); return; }
+    rec = { device: null, deviceText: "", deviceInterim: "", chunks: [], rate: 48000 };
+    if (useCloud) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        await ctx.resume();
+        const src = ctx.createMediaStreamSource(stream);
+        const proc = ctx.createScriptProcessor(4096, 1, 1);
+        proc.onaudioprocess = e => rec && rec.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+        src.connect(proc); proc.connect(ctx.destination);
+        Object.assign(rec, { stream, ctx, src, proc, rate: ctx.sampleRate });
+      } catch (e) { rec = null; err("Kein Zugriff aufs Mikrofon. Erlaube das Mikrofon für diese Seite in den Browser-Einstellungen."); return; }
+    }
+    if (useDevice) {
+      try {
+        const r = new SR();
+        r.lang = "de-CH"; r.continuous = true; r.interimResults = true;
+        r.onresult = e => {
+          let fin = "", inter = "";
+          for (let i = 0; i < e.results.length; i++) (e.results[i].isFinal ? (fin += e.results[i][0].transcript + " ") : (inter += e.results[i][0].transcript));
+          if (rec) { rec.deviceText = fin.trim(); rec.deviceInterim = inter; }
+        };
+        r.onerror = e => { if (rec) rec.deviceError = e.error; };
+        r.onend = () => { if (rec) rec.deviceEnded = true; };
+        r.start();
+        rec.device = r;
+      } catch (e) { rec.deviceError = String(e.message || e); }
+    }
+    t0 = Date.now();
+    $("micBtn").classList.add("rec"); $("micBtn").textContent = "Stopp"; $("micBtn").setAttribute("aria-label", "Aufnahme beenden");
+    tInt = setInterval(() => {
+      const s = Math.floor((Date.now() - t0) / 1000);
+      $("timer").textContent = `Aufnahme läuft · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      if (s >= 90) stop();
+    }, 250);
+  }
+
+  async function stop() {
+    const r = rec; if (!r) return;
+    clearInterval(tInt);
+    $("micBtn").classList.remove("rec"); $("micBtn").textContent = "Sprechen"; $("micBtn").setAttribute("aria-label", "Aufnahme starten");
+    $("timer").textContent = "Tippen zum Starten, nochmals tippen zum Beenden";
+    const secs = (Date.now() - t0) / 1000;
+    let wav = null;
+    if (r.stream) {
+      r.proc.disconnect(); r.src.disconnect(); r.stream.getTracks().forEach(t => t.stop());
+      try { await r.ctx.close(); } catch {}
+      wav = toWav(r.chunks, r.rate, 16000);
+    }
+    if (r.device) {
+      try { r.device.stop(); } catch {}
+      await new Promise(res => { const t = Date.now(); const i = setInterval(() => { if (r.deviceEnded || Date.now() - t > 2500) { clearInterval(i); res(); } }, 100); });
+    }
+    rec = null;
+    const id = Date.now();
+    const items = [];
+    if (r.device || r.deviceError) items.push({ engine: "device", text: (r.deviceText + " " + r.deviceInterim).trim(), error: !r.deviceText && !r.deviceInterim ? deviceErr(r.deviceError) : null });
+    if (wav && cfg.gemini) items.push({ engine: "gemini", pending: true });
+    if (wav && cfg.openai) items.push({ engine: "openai", pending: true });
+    const box = document.createElement("div");
+    box.style.cssText = "display:grid;gap:10px";
+    box.innerHTML = `<p class="label">Aufnahme von ${new Date(id).toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" })} · ${Math.round(secs)} Sek.</p>`;
+    $("results").prepend(box);
+    $("resCard").hidden = false;
+    if (wav) {
+      const a = document.createElement("audio"); a.controls = true; a.src = URL.createObjectURL(wav); a.style.width = "100%";
+      box.append(a);
+    }
+    for (const it of items) {
+      const el = document.createElement("div"); el.className = "result"; box.append(el);
+      it.el = el; it.key = id + "-" + it.engine; paint(it);
+      if (it.engine === "gemini") runGemini(wav).then(t => { it.text = t; }, e => { it.error = e; }).finally(() => { it.pending = false; paint(it); });
+      if (it.engine === "openai") runOpenAI(wav).then(t => { it.text = t; }, e => { it.error = e; }).finally(() => { it.pending = false; paint(it); });
+    }
+  }
+  function deviceErr(code) {
+    if (code === "not-allowed" || code === "service-not-allowed") return "Spracherkennung nicht erlaubt. Erlaube Mikrofon und Spracherkennung für diesen Browser.";
+    if (code === "no-speech") return "Es wurde keine Sprache erkannt.";
+    if (code === "language-not-supported") return "Deutsch (Schweiz) wird hier nicht unterstützt.";
+    return code ? "Fehler: " + code : "Es wurde nichts erkannt.";
+  }
+  function err(t) { $("micErr").textContent = t; $("micErr").hidden = false; }
+
+  function paint(it) {
+    const ratings = st.get("mt.ratings", {});
+    const mine = ratings[it.key]?.r;
+    it.el.innerHTML = `<div class="head"><b>${esc(NAMES[it.engine])}</b>${it.pending ? '<span class="small muted">wird erkannt…</span>' : ""}</div>` +
+      (it.pending ? "" : it.error ? `<p class="err small">${esc(it.error)}</p>` : `<p class="txt">${esc(it.text || "(leer)")}</p>`) +
+      (it.pending || it.error ? "" : `<div class="rate">${[["ok", "passt"], ["mid", "ungefähr"], ["bad", "falsch"]].map(([k, l]) => `<button type="button" data-k="${k}" aria-pressed="${mine === k}">${l}</button>`).join("")}</div>`);
+    it.el.querySelectorAll(".rate button").forEach(b => b.onclick = () => {
+      const rs = st.get("mt.ratings", {}); rs[it.key] = { e: it.engine, r: b.dataset.k }; st.set("mt.ratings", rs); paint(it); summary();
+    });
+  }
+  function summary() {
+    const rs = Object.values(st.get("mt.ratings", {}));
+    $("sumCard").hidden = !rs.length;
+    $("sum").innerHTML = Object.keys(NAMES).filter(e => rs.some(r => r.e === e)).map(e => {
+      const c = k => rs.filter(r => r.e === e && r.r === k).length;
+      return `<tr><td>${NAMES[e]}</td><td class="n">${c("ok")}</td><td class="n">${c("mid")}</td><td class="n">${c("bad")}</td></tr>`;
+    }).join("");
+  }
+  $("resetBtn").onclick = () => { st.set("mt.ratings", {}); summary(); };
+  summary();
+
+  // ---------- WAV ----------
+  function toWav(chunks, inRate, outRate) {
+    let len = 0; for (const c of chunks) len += c.length;
+    const data = new Float32Array(len); let o = 0; for (const c of chunks) { data.set(c, o); o += c.length; }
+    const ratio = inRate / outRate, n = Math.floor(len / ratio), pcm = new Int16Array(n);
+    for (let i = 0; i < n; i++) {
+      const a = Math.floor(i * ratio), b = Math.min(len, Math.floor((i + 1) * ratio)); let s = 0;
+      for (let j = a; j < b; j++) s += data[j];
+      const v = Math.max(-1, Math.min(1, s / Math.max(1, b - a)));
+      pcm[i] = v < 0 ? v * 0x8000 : v * 0x7fff;
+    }
+    const buf = new ArrayBuffer(44 + pcm.length * 2), dv = new DataView(buf);
+    const w = (p, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(p + i, s.charCodeAt(i)); };
+    w(0, "RIFF"); dv.setUint32(4, 36 + pcm.length * 2, true); w(8, "WAVE"); w(12, "fmt ");
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true); dv.setUint32(24, outRate, true);
+    dv.setUint32(28, outRate * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true); w(36, "data"); dv.setUint32(40, pcm.length * 2, true);
+    new Int16Array(buf, 44).set(pcm);
+    return new Blob([buf], { type: "audio/wav" });
+  }
+  function b64(blob) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(blob); }); }
+
+  // ---------- Cloud ----------
+  async function runGemini(wav) {
+    const key = $("k-gemini").value.trim(), model = $("m-gemini").value.trim() || "gemini-2.5-flash";
+    if (!key) throw "Kein Gemini-Schlüssel eingegeben.";
+    const body = { contents: [{ parts: [
+      { text: "Das ist eine Aufnahme auf Schweizerdeutsch (Mundart), gesprochen von einer Beraterin oder einem Berater. Antworte genau in diesem Format und mit nichts anderem:\nMundart: <möglichst wörtliche Transkription in Mundart>\nHochdeutsch: <was gesagt wurde, in Schweizer Hochdeutsch, ss statt ß>" },
+      { inline_data: { mime_type: "audio/wav", data: await b64(wav) } },
+    ] }] };
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw `Gemini meldet einen Fehler (${r.status}): ${j.error?.message || "unbekannt"}`;
+    return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("").trim().replace(/\nHochdeutsch:/, "\n\nHochdeutsch:");
+  }
+  async function runOpenAI(wav) {
+    const key = $("k-openai").value.trim(), model = $("m-openai").value.trim() || "gpt-4o-transcribe";
+    if (!key) throw "Kein OpenAI-Schlüssel eingegeben.";
+    const fd = new FormData();
+    fd.append("file", wav, "aufnahme.wav"); fd.append("model", model); fd.append("language", "de");
+    fd.append("prompt", "Schweizerdeutsch, Beratungsgespräch. Bitte in Schweizer Hochdeutsch mit ss statt ß.");
+    const r = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { Authorization: "Bearer " + key }, body: fd });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw `OpenAI meldet einen Fehler (${r.status}): ${j.error?.message || "unbekannt"}`;
+    return (j.text || "").trim();
+  }
+})();
+</script>
+</body>
+</html>
