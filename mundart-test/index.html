@@ -74,7 +74,7 @@ details summary { cursor: pointer; font-weight: 700; }
       <label class="tog"><input type="checkbox" id="e-gemini"> Google Gemini</label>
       <div class="cfg" id="cfg-gemini">
         <input type="password" id="k-gemini" placeholder="Gemini-API-Schlüssel (aistudio.google.com)" autocomplete="off">
-        <input type="text" id="m-gemini" value="gemini-2.5-flash" aria-label="Gemini-Modell">
+        <input type="text" id="m-gemini" value="gemini-3.8-flash" aria-label="Gemini-Modell">
         <p class="small muted">Liefert Mundart und Hochdeutsch. Mit einem kostenlosen Schlüssel aus Google AI Studio testbar.</p>
       </div>
     </div>
@@ -281,7 +281,7 @@ details summary { cursor: pointer; font-weight: 700; }
 
   // ---------- Cloud ----------
   async function runGemini(wav) {
-    const key = $("k-gemini").value.trim(), model = $("m-gemini").value.trim() || "gemini-2.5-flash";
+    const key = $("k-gemini").value.trim(), model = $("m-gemini").value.trim() || "gemini-3.8-flash";
     if (!key) throw "Kein Gemini-Schlüssel eingegeben.";
     const body = { contents: [{ parts: [
       { text: "Das ist eine Aufnahme auf Schweizerdeutsch (Mundart), gesprochen von einer Beraterin oder einem Berater. Antworte genau in diesem Format und mit nichts anderem:\nMundart: <möglichst wörtliche Transkription in Mundart>\nHochdeutsch: <was gesagt wurde, in Schweizer Hochdeutsch, ss statt ß>" },
